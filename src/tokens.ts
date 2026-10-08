@@ -160,7 +160,9 @@ export async function issueTokens(ctx: AppContext, options: IssueOptions): Promi
     };
     if (grantType === 'client_credentials') accessPayload.gty = 'client-credentials';
     else if (grantType !== 'authorization_code') accessPayload.gty = grantType.split('/').pop();
-    if (user && resourceServer?.token_dialect === 'access_token_authz') accessPayload.permissions = permissions;
+    // With the authz dialect Auth0 adds `permissions` to user tokens (RBAC permissions) and to M2M tokens
+    // (the granted scopes) alike.
+    if (resourceServer?.token_dialect === 'access_token_authz') accessPayload.permissions = user ? permissions : scopes;
     if (options.sessionId && user) accessPayload.sid = options.sessionId;
 
     const sign = (payload: JWTPayload) =>

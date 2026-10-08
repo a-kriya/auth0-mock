@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.1.1 (2026-10-08)
+
+- `client_credentials` tokens for APIs using the `access_token_authz` dialect now carry the granted scopes in
+  the `permissions` claim, as Auth0 does.
+
 ## 0.1.0 (2026-10-08)
 
 Initial release.

@@ -58,7 +58,8 @@ describe('POST /oauth/token', () => {
                 scope: 'read:things',
             });
             expect(claims.exp - claims.iat).toBe(900);
-            expect(claims.permissions).toBeUndefined();
+            // access_token_authz dialect: M2M tokens carry the granted scopes as permissions
+            expect(claims.permissions).toEqual(['read:things']);
         });
 
         it('honours a requested subset of the granted scopes', async () => {

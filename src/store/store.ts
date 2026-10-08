@@ -71,6 +71,8 @@ export interface RefreshTokenRecord {
     session_id?: string;
     created_at: number;
     expires_at: number;
+    /** Grant that started the chain (`password`, `password-realm`, `authorization_code`); refreshes keep it. */
+    grant_type?: string;
     /** Set once rotated; a reused token is rejected. */
     rotated_at?: number;
 }

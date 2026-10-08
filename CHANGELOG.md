@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.1.2 (2026-10-08)
+
+- ID tokens issued by the `password` / `password-realm` grants (and refreshes of them) always include the basic
+  profile and email claims, as Auth0's do, regardless of the `profile` / `email` scopes.
+
 ## 0.1.1 (2026-10-08)
 
 - `client_credentials` tokens for APIs using the `access_token_authz` dialect now carry the granted scopes in

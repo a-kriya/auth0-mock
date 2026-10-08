@@ -1,6 +1,6 @@
 {
   "name": "auth0-mock",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "Configurable Auth0 emulator (OIDC/OAuth, Management API v2, post-login Actions) for local development and end-to-end testing. Not affiliated with Okta or Auth0.",
   "keywords": [
     "auth0",

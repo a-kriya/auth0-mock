@@ -98,8 +98,15 @@ function idTokenLifetime(ctx: AppContext, client: Entity): number {
     return typeof jwt.lifetime_in_seconds === 'number' ? jwt.lifetime_in_seconds : ctx.config.idTokenTtl;
 }
 
-function profileClaims(user: Entity, scopes: Set<string>): Record<string, unknown> {
+const PASSWORD_GRANTS = new Set(['password', 'http://auth0.com/oauth/grant-type/password-realm']);
+
+/**
+ * Standard claims of the ID token. Auth0 filters them by scope for browser flows, but ID tokens from the
+ * password grants (and refreshes of them) always carry the basic profile and email claims.
+ */
+function profileClaims(user: Entity, scopes: Set<string>, passwordLogin: boolean): Record<string, unknown> {
     const claims: Record<string, unknown> = {};
+    if (passwordLogin) scopes = new Set([...scopes, 'profile', 'email']);
     if (scopes.has('profile')) {
         for (const key of ['name', 'given_name', 'family_name', 'middle_name', 'nickname', 'picture', 'updated_at']) {
             if (user[key] !== undefined) claims[key] = user[key];
@@ -178,13 +185,16 @@ export async function issueTokens(ctx: AppContext, options: IssueOptions): Promi
     };
 
     if (user && scopes.includes('openid')) {
+        const passwordLogin =
+            PASSWORD_GRANTS.has(grantType) ||
+            (grantType === 'refresh_token' && PASSWORD_GRANTS.has(options.refreshedFrom?.grant_type ?? ''));
         const idPayload: JWTPayload = {
             iss: ctx.issuer,
             sub: String(user.user_id),
             aud: clientId,
             iat: now,
             exp: now + idTokenLifetime(ctx, client),
-            ...profileClaims(user, new Set(scopes)),
+            ...profileClaims(user, new Set(scopes), passwordLogin),
             ...options.idTokenClaims,
         };
         if (options.nonce) idPayload.nonce = options.nonce;
@@ -197,6 +207,7 @@ export async function issueTokens(ctx: AppContext, options: IssueOptions): Promi
         result.refresh_token = createRefreshToken(ctx, {
             user,
             client,
+            grantType,
             scope: scopes,
             ...(options.audience ? { audience: options.audience } : {}),
             ...(options.sessionId ? { sessionId: options.sessionId } : {}),
@@ -229,6 +240,7 @@ function createRefreshToken(
     input: {
         user: Entity;
         client: Entity;
+        grantType: string;
         scope: string[];
         audience?: string;
         sessionId?: string;
@@ -249,6 +261,7 @@ function createRefreshToken(
         user_id: String(input.user.user_id),
         client_id: String(input.client.client_id),
         scope: input.scope.join(' '),
+        grant_type: input.previous?.grant_type ?? input.grantType,
         ...(input.audience ? { audience: input.audience } : {}),
         ...(input.sessionId ? { session_id: input.sessionId } : {}),
         created_at: now,

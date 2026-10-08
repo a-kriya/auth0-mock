@@ -184,6 +184,23 @@ describe('POST /oauth/token', () => {
     });
 
     describe('password-realm and password grants', () => {
+        it('always puts the basic profile and email claims in the id token, as Auth0 does', async () => {
+            const login = await passwordRealm('alice@example.com', PASSWORD, { scope: 'openid offline_access' });
+            expect(login.status).toBe(200);
+            const id = decodeJwt(login.body.id_token);
+            expect(id).toMatchObject({ name: 'Alice Example', email: 'alice@example.com', email_verified: true });
+            const refreshed = await h.token({
+                grant_type: 'refresh_token',
+                client_id: t.clients.spa.client_id,
+                refresh_token: login.body.refresh_token,
+            });
+            expect(refreshed.status).toBe(200);
+            expect(decodeJwt(refreshed.body.id_token)).toMatchObject({
+                name: 'Alice Example',
+                email: 'alice@example.com',
+            });
+        });
+
         it('issues access, id and refresh tokens to alice', async () => {
             const res = await passwordRealm('alice@example.com', PASSWORD);
             expect(res.status).toBe(200);
@@ -245,15 +262,9 @@ describe('POST /oauth/token', () => {
             const id = decodeJwt(openid.body.id_token);
             expect(id.sub).toBe('auth0|alice');
             expect(id.aud).toBe(t.clients.spa.client_id);
-            for (const claim of ['name', 'given_name', 'family_name', 'nickname', 'email', 'email_verified']) {
-                expect(id[claim]).toBeUndefined();
-            }
-
-            const profileOnly = await passwordRealm('alice@example.com', PASSWORD, { scope: 'openid profile' });
-            const profile = decodeJwt(profileOnly.body.id_token);
-            expect(profile).toMatchObject({ name: 'Alice Example', given_name: 'Alice', family_name: 'Example' });
-            expect(profile.email).toBeUndefined();
-            expect(profile.email_verified).toBeUndefined();
+            // password grants always carry the basic profile and email claims, whatever the scopes
+            expect(id).toMatchObject({ name: 'Alice Example', email: 'alice@example.com', email_verified: true });
+            expect(id.phone_number).toBeUndefined();
         });
 
         it('applies RBAC to the requested API scopes and permissions claim', async () => {

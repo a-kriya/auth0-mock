@@ -1,0 +1,37 @@
+# Minimal stack: the emulator plus a one-shot Terraform job that provisions the example tenant.
+#
+#   AUTH0_MOCK_ADMIN_TOKEN=change-me docker compose up
+#
+# The emulator writes its CA to ./certs/rootCA.pem; point other containers at it with
+# NODE_EXTRA_CA_CERTS / SSL_CERT_FILE / REQUESTS_CA_BUNDLE.
+services:
+  auth0-mock:
+    image: ghcr.io/a-kriya/auth0-mock:latest
+    # build: ..
+    ports:
+      - '4400:4400'
+    environment:
+      AUTH0_MOCK_ISSUER: https://auth0-mock:4400/
+      AUTH0_MOCK_TLS_SANS: auth0-mock,localhost,127.0.0.1,host.docker.internal
+      AUTH0_MOCK_ADMIN_TOKEN: ${AUTH0_MOCK_ADMIN_TOKEN:-change-me}
+      # Alternative to Terraform: boot from a declarative seed.
+      # AUTH0_MOCK_SEED: /config/seed.json
+    volumes:
+      - ./certs:/certs
+      - ./seed.json:/config/seed.json:ro
+
+  terraform:
+    image: hashicorp/terraform:1.12
+    depends_on:
+      auth0-mock:
+        condition: service_healthy
+    working_dir: /work
+    environment:
+      AUTH0_DOMAIN: auth0-mock:4400
+      AUTH0_API_TOKEN: ${AUTH0_MOCK_ADMIN_TOKEN:-change-me}
+      SSL_CERT_FILE: /certs/rootCA.pem
+      TF_IN_AUTOMATION: '1'
+    volumes:
+      - ./terraform:/work
+      - ./certs:/certs:ro
+    entrypoint: sh -c "terraform init -input=false && terraform apply -auto-approve -var auth0_domain=auth0-mock:4400"

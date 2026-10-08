@@ -1,0 +1,15 @@
+node_modules/
+dist/
+.cache/
+certs/
+*.pem
+*.key
+.env
+.env.*
+!.env.sample
+*.tfstate
+*.tfstate.*
+.terraform/
+.terraform.lock.hcl
+.DS_Store
+coverage/

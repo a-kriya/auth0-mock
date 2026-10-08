@@ -1,0 +1,10 @@
+node_modules
+dist
+certs
+test
+examples
+.github
+.git
+.cache
+*.md
+!README.md

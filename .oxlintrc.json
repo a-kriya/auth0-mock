@@ -1,0 +1,8 @@
+{
+  "$schema": "./node_modules/oxlint/configuration_schema.json",
+  "rules": {
+    "no-unused-vars": ["error", { "ignoreRestSiblings": true, "argsIgnorePattern": "^_" }],
+    "typescript/consistent-type-imports": "warn"
+  },
+  "ignorePatterns": ["dist/", "certs/", "examples/terraform/.terraform/"]
+}

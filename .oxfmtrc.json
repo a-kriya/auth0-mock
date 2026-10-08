@@ -1,0 +1,14 @@
+{
+  "$schema": "./node_modules/oxfmt/configuration_schema.json",
+  "printWidth": 120,
+  "tabWidth": 4,
+  "singleQuote": true,
+  "trailingComma": "es5",
+  "ignorePatterns": ["dist/", "certs/", "*.html", "examples/terraform/.terraform/"],
+  "overrides": [
+    {
+      "files": ["*.json", "*.jsonc", "*.yaml", "*.yml", "*.md"],
+      "options": { "tabWidth": 2 }
+    }
+  ]
+}

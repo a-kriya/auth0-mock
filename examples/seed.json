@@ -1,0 +1,154 @@
+{
+  "version": 1,
+  "tenant": {
+    "friendly_name": "auth0-mock example",
+    "default_directory": "Username-Password-Authentication",
+    "support_email": "support@example.com"
+  },
+  "attackProtection": {
+    "bruteForce": {
+      "enabled": true,
+      "max_attempts": 10,
+      "shields": ["block", "user_notification"]
+    }
+  },
+  "connections": [
+    {
+      "name": "Username-Password-Authentication",
+      "strategy": "auth0",
+      "options": {
+        "disable_signup": true,
+        "password_policy": "good",
+        "brute_force_protection": true
+      },
+      "enabled_clients": ["exampleSpaClientId00000000000000", "exampleBackendClientId0000000000"]
+    }
+  ],
+  "resourceServers": [
+    {
+      "name": "Example API",
+      "identifier": "https://api.example.com",
+      "enforce_policies": true,
+      "token_dialect": "access_token_authz",
+      "token_lifetime": 900,
+      "allow_offline_access": true,
+      "scopes": [
+        {
+          "value": "read:things",
+          "description": "Read things"
+        },
+        {
+          "value": "write:things",
+          "description": "Write things"
+        }
+      ]
+    }
+  ],
+  "roles": [
+    {
+      "id": "rol_admin000000000",
+      "name": "Administrator",
+      "description": "Full access"
+    },
+    {
+      "id": "rol_reader00000000",
+      "name": "Reader",
+      "description": "Read only"
+    }
+  ],
+  "rolePermissions": {
+    "Administrator": [
+      {
+        "permission_name": "read:things",
+        "resource_server_identifier": "https://api.example.com"
+      },
+      {
+        "permission_name": "write:things",
+        "resource_server_identifier": "https://api.example.com"
+      }
+    ],
+    "Reader": [
+      {
+        "permission_name": "read:things",
+        "resource_server_identifier": "https://api.example.com"
+      }
+    ]
+  },
+  "clients": [
+    {
+      "client_id": "exampleSpaClientId00000000000000",
+      "name": "Example SPA",
+      "app_type": "spa",
+      "callbacks": ["http://localhost:3000"],
+      "allowed_logout_urls": ["http://localhost:3000"],
+      "web_origins": ["http://localhost:3000"],
+      "grant_types": ["authorization_code", "refresh_token", "http://auth0.com/oauth/grant-type/password-realm"],
+      "refresh_token": {
+        "rotation_type": "rotating",
+        "expiration_type": "expiring",
+        "token_lifetime": 43200
+      }
+    },
+    {
+      "client_id": "exampleBackendClientId0000000000",
+      "client_secret": "example-backend-secret",
+      "name": "Example Backend",
+      "app_type": "non_interactive",
+      "grant_types": ["client_credentials"]
+    }
+  ],
+  "clientGrants": [
+    {
+      "client_id": "exampleBackendClientId0000000000",
+      "audience": "https://api.example.com",
+      "scope": ["read:things"]
+    }
+  ],
+  "users": [
+    {
+      "connection": "Username-Password-Authentication",
+      "user_id": "alice",
+      "email": "alice@example.com",
+      "email_verified": true,
+      "name": "Alice Example",
+      "given_name": "Alice",
+      "family_name": "Example",
+      "password": "Passw0rd!Passw0rd!",
+      "roles": ["Administrator"]
+    },
+    {
+      "connection": "Username-Password-Authentication",
+      "user_id": "bob",
+      "email": "bob@example.com",
+      "email_verified": true,
+      "name": "Bob Example",
+      "password": "Passw0rd!Passw0rd!",
+      "roles": ["Reader"]
+    }
+  ],
+  "actions": [
+    {
+      "name": "Add roles claim",
+      "supported_triggers": [
+        {
+          "id": "post-login",
+          "version": "v3"
+        }
+      ],
+      "runtime": "node22",
+      "code": "exports.onExecutePostLogin = async (event, api) => {\n  api.accessToken.setCustomClaim('https://example.com/roles', event.authorization.roles);\n};\n",
+      "deploy": true
+    }
+  ],
+  "triggerBindings": {
+    "post-login": [
+      {
+        "ref": {
+          "type": "action_name",
+          "value": "Add roles claim"
+        },
+        "display_name": "Add roles claim"
+      }
+    ]
+  }
+}

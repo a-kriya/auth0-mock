@@ -1,0 +1,67 @@
+{
+  "name": "auth0-mock",
+  "version": "0.1.0",
+  "description": "Configurable Auth0 emulator (OIDC/OAuth, Management API v2, post-login Actions) for local development and end-to-end testing. Not affiliated with Okta or Auth0.",
+  "keywords": [
+    "auth0",
+    "emulator",
+    "mock",
+    "oauth2",
+    "oidc",
+    "terraform",
+    "testing"
+  ],
+  "homepage": "https://github.com/a-kriya/auth0-mock#readme",
+  "bugs": {
+    "url": "https://github.com/a-kriya/auth0-mock/issues"
+  },
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/a-kriya/auth0-mock.git"
+  },
+  "bin": {
+    "auth0-mock": "./dist/bin/auth0-mock.js"
+  },
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE"
+  ],
+  "type": "module",
+  "exports": {
+    ".": {
+      "types": "./dist/src/index.d.ts",
+      "default": "./dist/src/index.js"
+    }
+  },
+  "scripts": {
+    "dev": "node --watch bin/auth0-mock.ts",
+    "start": "node bin/auth0-mock.ts",
+    "build": "tsdown",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "lint": "tsc --noEmit && oxlint && oxfmt --check",
+    "lint:fix": "oxlint --fix && oxfmt",
+    "prepack": "npm run build"
+  },
+  "dependencies": {
+    "@peculiar/x509": "^2.1.0",
+    "express": "^5.2.1",
+    "jose": "^6.2.12",
+    "reflect-metadata": "^0.2.2",
+    "zod": "^4.6.5"
+  },
+  "devDependencies": {
+    "@types/express": "^5.0.6",
+    "@types/node": "24",
+    "oxfmt": "^0.72.0",
+    "oxlint": "^1.87.0",
+    "tsdown": "^0.23.0",
+    "typescript": "^6.0.3",
+    "vitest": "^5.0.3"
+  },
+  "engines": {
+    "node": ">=24"
+  }
+}
